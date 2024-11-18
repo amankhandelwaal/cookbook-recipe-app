@@ -227,4 +227,4 @@ const newRecipeSchemaRequest = {
     }
   }
 
-export default { newUserSchemaRequest, userLoginSchema };
+  export default {newUserSchemaRequest, userLoginSchema, newRecipeSchemaRequest, updateRecipeRequest, deleteRecipeRequest};

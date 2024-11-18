@@ -201,4 +201,264 @@ router.get("/user/:username", async (req, resp) => {
   }
 })
 
+router.post(
+  "/recipe",
+  checkSchema(schema.newRecipeSchemaRequest),
+  async (req, resp) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      resp.status(400).send({ errors: errors.array() });
+      return;
+    }
+
+    let recipe = req.body;
+    if (recipe === null) {
+      resp.status(400).send({ error: "Invalid request" });
+      return;
+    }
+
+    try {
+      let collections = connect.db.collection("recipes");
+      const existingRecipe = await collections.findOne({
+        username: recipe.username,
+        title: recipe.title
+      });
+
+      if (existingRecipe) {
+        resp.status(400).send({
+          message: "Recipe with this title already exists for this user",
+          recipe: {
+            title: existingRecipe.title,
+            username: existingRecipe.username
+          }
+        });
+        return;
+      }
+
+      recipe.createdAt = new Date();
+      recipe.updatedAt = new Date();
+
+      const result = await collections.insertOne(recipe);
+      
+      if (result.insertedId) {
+        const usersCollection = connect.db.collection("users");
+        await usersCollection.updateOne(
+          { username: recipe.username },
+          { $push: { "account_info.recipes": result.insertedId } }
+        );
+
+        resp.status(201).send({
+          message: "Recipe created successfully",
+          recipe: {
+            id: result.insertedId,
+            title: recipe.title,
+            category: recipe.category,
+            username: recipe.username
+          }
+        });
+      } else {
+        resp.status(500).send({
+          message: "Failed to create recipe"
+        });
+      }
+    } catch (error) {
+      resp.status(500).send({
+        message: "Internal server error",
+        error: error.message
+      });
+    }
+  }
+);
+
+router.put(
+  "/recipe/:id",
+  checkSchema(schema.updateRecipeRequest),
+  async (req, resp) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      resp.status(400).send({ errors: errors.array() });
+      return;
+    }
+
+    try {
+      const recipeId = req.params.id;
+      if (!ObjectId.isValid(recipeId)) {
+        resp.status(400).send({ error: "Invalid recipe ID format" });
+        return;
+      }
+
+      const updates = req.body;
+      updates.updatedAt = new Date();
+
+      let collections = connect.db.collection("recipes");
+      
+      const existingRecipe = await collections.findOne({ 
+        _id: new ObjectId(recipeId) 
+      });
+
+      if (!existingRecipe) {
+        resp.status(404).send({ error: "Recipe not found" });
+        return;
+      }
+
+      const authHeader = req.header("Authorization");
+      const token = authHeader.split(" ")[1];
+      const decoded = await auth.verifyToken(token);
+      
+      if (existingRecipe.username !== decoded.username) {
+        resp.status(403).send({ error: "Not authorized to update this recipe" });
+        return;
+      }
+
+      const result = await collections.updateOne(
+        { _id: new ObjectId(recipeId) },
+        { $set: updates }
+      );
+
+      if (result.modifiedCount === 1) {
+        resp.status(200).send({
+          message: "Recipe updated successfully",
+          recipeId: recipeId
+        });
+      } else {
+        resp.status(500).send({
+          message: "Failed to update recipe"
+        });
+      }
+    } catch (error) {
+      resp.status(500).send({
+        message: "Internal server error",
+        error: error.message
+      });
+    }
+  }
+);
+
+router.delete(
+  "/recipe/:id",
+  checkSchema(schema.deleteRecipeRequest),
+  async (req, resp) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      resp.status(400).send({ errors: errors.array() });
+      return;
+    }
+
+    try {
+      const recipeId = req.params.id;
+      if (!ObjectId.isValid(recipeId)) {
+        resp.status(400).send({ error: "Invalid recipe ID format" });
+        return;
+      }
+
+      let collections = connect.db.collection("recipes");
+      
+      const existingRecipe = await collections.findOne({ 
+        _id: new ObjectId(recipeId) 
+      });
+
+      if (!existingRecipe) {
+        resp.status(404).send({ error: "Recipe not found" });
+        return;
+      }
+
+      const authHeader = req.header("Authorization");
+      const token = authHeader.split(" ")[1];
+      const decoded = await auth.verifyToken(token);
+      
+      if (existingRecipe.username !== decoded.username) {
+        resp.status(403).send({ error: "Not authorized to delete this recipe" });
+        return;
+      }
+
+      const result = await collections.deleteOne({ 
+        _id: new ObjectId(recipeId) 
+      });
+
+      if (result.deletedCount === 1) {
+        const usersCollection = connect.db.collection("users");
+        await usersCollection.updateOne(
+          { username: existingRecipe.username },
+          { $pull: { "account_info.recipes": new ObjectId(recipeId) } }
+        );
+
+        resp.status(200).send({
+          message: "Recipe deleted successfully",
+          recipeId: recipeId
+        });
+      } else {
+        resp.status(500).send({
+          message: "Failed to delete recipe"
+        });
+      }
+    } catch (error) {
+      resp.status(500).send({
+        message: "Internal server error",
+        error: error.message
+      });
+    }
+  }
+);
+
+router.get("/recipes", async (req, resp) => {
+  try {
+    let collections = connect.db.collection("recipes");
+    const recipes = await collections.find({}).toArray();
+    
+    if (recipes.length === 0) {
+      resp.status(404).send({ message: "No recipes found" });
+    } else {
+      resp.status(200).send(recipes);
+    }
+  } catch (error) {
+    resp.status(500).send({
+      message: "Internal server error",
+      error: error.message
+    });
+  }
+});
+
+router.get("/recipes/:username", async (req, resp) => {
+  try {
+    const username = req.params.username;
+    let collections = connect.db.collection("recipes");
+    const recipes = await collections.find({ username: username }).toArray();
+    
+    if (recipes.length === 0) {
+      resp.status(404).send({ message: "No recipes found for this user" });
+    } else {
+      resp.status(200).send(recipes);
+    }
+  } catch (error) {
+    resp.status(500).send({
+      message: "Internal server error",
+      error: error.message
+    });
+  }
+});
+
+router.get("/recipe/:id", async (req, resp) => {
+  try {
+    const recipeId = req.params.id;
+    if (!ObjectId.isValid(recipeId)) {
+      resp.status(400).send({ error: "Invalid recipe ID format" });
+      return;
+    }
+
+    let collections = connect.db.collection("recipes");
+    const recipe = await collections.findOne({ _id: new ObjectId(recipeId) });
+    
+    if (!recipe) {
+      resp.status(404).send({ message: "Recipe not found" });
+    } else {
+      resp.status(200).send(recipe);
+    }
+  } catch (error) {
+    resp.status(500).send({
+      message: "Internal server error",
+      error: error.message
+    });
+  }
+});
+
 export default router;
