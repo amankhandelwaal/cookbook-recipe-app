@@ -461,4 +461,191 @@ router.get("/recipes/byid/:id", async (req, resp) => {
   }
 });
 
+router.post(
+  "/recipe/:id/rate",
+  checkSchema(schema.addRatingSchema),
+  async (req, resp) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      resp.status(400).send({ errors: errors.array() });
+      return;
+    }
+
+    try {
+      const recipeId = req.params.id;
+      const rating = parseInt(req.body.rating);
+      
+      const authHeader = req.header("Authorization");
+      const token = authHeader.split(" ")[1];
+      const decoded = await auth.verifyToken(token);
+      const username = decoded.username;
+
+      let recipesCollection = connect.db.collection("recipes");
+      let ratingsCollection = connect.db.collection("ratings");
+
+      const recipe = await recipesCollection.findOne({
+        _id: new ObjectId(recipeId)
+      });
+
+      if (!recipe) {
+        resp.status(404).send({ error: "Recipe not found" });
+        return;
+      }
+
+      const existingRating = await ratingsCollection.findOne({
+        recipeId: new ObjectId(recipeId),
+        username: username
+      });
+
+      if (existingRating) {
+        const result = await ratingsCollection.updateOne(
+          {
+            recipeId: new ObjectId(recipeId),
+            username: username
+          },
+          {
+            $set: {
+              rating: rating,
+              updatedAt: new Date()
+            }
+          }
+        );
+
+        if (result.modifiedCount === 1) {
+          await updateAverageRating(recipeId, recipesCollection, ratingsCollection);
+          resp.status(200).send({
+            message: "Rating updated successfully",
+            rating: rating
+          });
+        } else {
+          resp.status(500).send({
+            message: "Failed to update rating"
+          });
+        }
+      } else {
+        const result = await ratingsCollection.insertOne({
+          recipeId: new ObjectId(recipeId),
+          username: username,
+          rating: rating,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
+
+        if (result.insertedId) {
+          await updateAverageRating(recipeId, recipesCollection, ratingsCollection);
+          resp.status(201).send({
+            message: "Rating added successfully",
+            rating: rating
+          });
+        } else {
+          resp.status(500).send({
+            message: "Failed to add rating"
+          });
+        }
+      }
+    } catch (error) {
+      resp.status(500).send({
+        message: "Internal server error",
+        error: error.message
+      });
+    }
+  }
+);
+
+async function updateAverageRating(recipeId, recipesCollection, ratingsCollection) {
+  const ratings = await ratingsCollection.find({
+    recipeId: new ObjectId(recipeId)
+  }).toArray();
+
+  const averageRating = ratings.reduce((acc, curr) => acc + curr.rating, 0) / ratings.length;
+  const totalRatings = ratings.length;
+
+  await recipesCollection.updateOne(
+    { _id: new ObjectId(recipeId) },
+    {
+      $set: {
+        averageRating: parseFloat(averageRating.toFixed(1)),
+        totalRatings: totalRatings
+      }
+    }
+  );
+}
+
+router.get("/recipe/:id/ratings", async (req, resp) => {
+  try {
+    const recipeId = req.params.id;
+    if (!ObjectId.isValid(recipeId)) {
+      resp.status(400).send({ error: "Invalid recipe ID format" });
+      return;
+    }
+
+    let ratingsCollection = connect.db.collection("ratings");
+    const ratings = await ratingsCollection.find({
+      recipeId: new ObjectId(recipeId)
+    }).toArray();
+
+    const ratingStats = {
+      averageRating: 0,
+      totalRatings: 0,
+      ratingDistribution: {
+        1: 0, 2: 0, 3: 0, 4: 0, 5: 0
+      }
+    };
+
+    if (ratings.length > 0) {
+      ratingStats.totalRatings = ratings.length;
+      ratingStats.averageRating = parseFloat((ratings.reduce((acc, curr) => acc + curr.rating, 0) / ratings.length).toFixed(1));
+      
+      ratings.forEach(rating => {
+        ratingStats.ratingDistribution[rating.rating]++;
+      });
+    }
+
+    resp.status(200).send(ratingStats);
+  } catch (error) {
+    resp.status(500).send({
+      message: "Internal server error",
+      error: error.message
+    });
+  }
+});
+
+router.get("/recipe/:id/myrating", async (req, resp) => {
+  try {
+    const recipeId = req.params.id;
+    if (!ObjectId.isValid(recipeId)) {
+      resp.status(400).send({ error: "Invalid recipe ID format" });
+      return;
+    }
+
+    const authHeader = req.header("Authorization");
+    const token = authHeader.split(" ")[1];
+    const decoded = await auth.verifyToken(token);
+    const username = decoded.username;
+
+    let ratingsCollection = connect.db.collection("ratings");
+    const rating = await ratingsCollection.findOne({
+      recipeId: new ObjectId(recipeId),
+      username: username
+    });
+
+    if (rating) {
+      resp.status(200).send({
+        rating: rating.rating,
+        createdAt: rating.createdAt,
+        updatedAt: rating.updatedAt
+      });
+    } else {
+      resp.status(404).send({
+        message: "No rating found for this recipe"
+      });
+    }
+  } catch (error) {
+    resp.status(500).send({
+      message: "Internal server error",
+      error: error.message
+    });
+  }
+});
+
 export default router;

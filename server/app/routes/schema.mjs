@@ -227,4 +227,27 @@ const newRecipeSchemaRequest = {
     }
   }
 
-  export default {newUserSchemaRequest, userLoginSchema, newRecipeSchemaRequest, updateRecipeRequest, deleteRecipeRequest};
+  const addRatingSchema = {
+    recipeId: {
+      notEmpty: true,
+      isString: true,
+      custom: {
+        options: (value) => {
+          if (!ObjectId.isValid(value)) {
+            throw new Error('Invalid recipe ID format');
+          }
+          return true;
+        }
+      },
+      errorMessage: "Valid recipe ID is required"
+    },
+    rating: {
+      notEmpty: true,
+      isInt: {
+        options: { min: 1, max: 5 }
+      },
+      errorMessage: "Rating must be between 1 and 5"
+    }
+  };
+
+  export default {newUserSchemaRequest, userLoginSchema, newRecipeSchemaRequest, updateRecipeRequest, deleteRecipeRequest, addRatingSchema};
