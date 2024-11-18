@@ -239,7 +239,7 @@ router.post(
       recipe.updatedAt = new Date();
 
       const result = await collections.insertOne(recipe);
-      
+
       if (result.insertedId) {
         const usersCollection = connect.db.collection("users");
         await usersCollection.updateOne(
@@ -291,9 +291,9 @@ router.put(
       updates.updatedAt = new Date();
 
       let collections = connect.db.collection("recipes");
-      
-      const existingRecipe = await collections.findOne({ 
-        _id: new ObjectId(recipeId) 
+
+      const existingRecipe = await collections.findOne({
+        _id: new ObjectId(recipeId)
       });
 
       if (!existingRecipe) {
@@ -304,7 +304,7 @@ router.put(
       const authHeader = req.header("Authorization");
       const token = authHeader.split(" ")[1];
       const decoded = await auth.verifyToken(token);
-      
+
       if (existingRecipe.username !== decoded.username) {
         resp.status(403).send({ error: "Not authorized to update this recipe" });
         return;
@@ -352,9 +352,9 @@ router.delete(
       }
 
       let collections = connect.db.collection("recipes");
-      
-      const existingRecipe = await collections.findOne({ 
-        _id: new ObjectId(recipeId) 
+
+      const existingRecipe = await collections.findOne({
+        _id: new ObjectId(recipeId)
       });
 
       if (!existingRecipe) {
@@ -365,14 +365,14 @@ router.delete(
       const authHeader = req.header("Authorization");
       const token = authHeader.split(" ")[1];
       const decoded = await auth.verifyToken(token);
-      
+
       if (existingRecipe.username !== decoded.username) {
         resp.status(403).send({ error: "Not authorized to delete this recipe" });
         return;
       }
 
-      const result = await collections.deleteOne({ 
-        _id: new ObjectId(recipeId) 
+      const result = await collections.deleteOne({
+        _id: new ObjectId(recipeId)
       });
 
       if (result.deletedCount === 1) {
@@ -404,7 +404,7 @@ router.get("/recipes", async (req, resp) => {
   try {
     let collections = connect.db.collection("recipes");
     const recipes = await collections.find({}).toArray();
-    
+
     if (recipes.length === 0) {
       resp.status(404).send({ message: "No recipes found" });
     } else {
@@ -418,12 +418,12 @@ router.get("/recipes", async (req, resp) => {
   }
 });
 
-router.get("/recipes/:username", async (req, resp) => {
+router.get("/recipes/byuser/:username", async (req, resp) => {
   try {
     const username = req.params.username;
     let collections = connect.db.collection("recipes");
     const recipes = await collections.find({ username: username }).toArray();
-    
+
     if (recipes.length === 0) {
       resp.status(404).send({ message: "No recipes found for this user" });
     } else {
@@ -437,7 +437,7 @@ router.get("/recipes/:username", async (req, resp) => {
   }
 });
 
-router.get("/recipe/:id", async (req, resp) => {
+router.get("/recipes/byid/:id", async (req, resp) => {
   try {
     const recipeId = req.params.id;
     if (!ObjectId.isValid(recipeId)) {
@@ -447,7 +447,7 @@ router.get("/recipe/:id", async (req, resp) => {
 
     let collections = connect.db.collection("recipes");
     const recipe = await collections.findOne({ _id: new ObjectId(recipeId) });
-    
+
     if (!recipe) {
       resp.status(404).send({ message: "Recipe not found" });
     } else {
