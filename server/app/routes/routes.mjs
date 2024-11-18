@@ -473,8 +473,11 @@ router.post(
 
     try {
       const recipeId = req.params.id;
-      const rating = parseInt(req.body.rating);
-      
+      if (recipeId.length !== 24) {
+        resp.status(400).send({ "message": "recipe id is of an invalid format!" });
+        return;
+      }
+      const rating = parseInt(req.body.rating); 
       const authHeader = req.header("Authorization");
       const token = authHeader.split(" ")[1];
       const decoded = await auth.verifyToken(token);
@@ -484,7 +487,7 @@ router.post(
       let ratingsCollection = connect.db.collection("ratings");
 
       const recipe = await recipesCollection.findOne({
-        _id: new ObjectId(recipeId)
+        _id: ObjectId.createFromHexString(recipeId)
       });
 
       if (!recipe) {
@@ -493,14 +496,14 @@ router.post(
       }
 
       const existingRating = await ratingsCollection.findOne({
-        recipeId: new ObjectId(recipeId),
+        recipeId: ObjectId.createFromHexString(recipeId),
         username: username
       });
 
       if (existingRating) {
         const result = await ratingsCollection.updateOne(
           {
-            recipeId: new ObjectId(recipeId),
+            recipeId: ObjectId.createFromHexString(recipeId),
             username: username
           },
           {
@@ -524,7 +527,7 @@ router.post(
         }
       } else {
         const result = await ratingsCollection.insertOne({
-          recipeId: new ObjectId(recipeId),
+          recipeId: ObjectId.createFromHexString(recipeId),
           username: username,
           rating: rating,
           createdAt: new Date(),

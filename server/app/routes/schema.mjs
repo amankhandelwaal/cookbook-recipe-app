@@ -228,19 +228,19 @@ const newRecipeSchemaRequest = {
   }
 
   const addRatingSchema = {
-    recipeId: {
-      notEmpty: true,
-      isString: true,
-      custom: {
-        options: (value) => {
-          if (!ObjectId.isValid(value)) {
-            throw new Error('Invalid recipe ID format');
-          }
-          return true;
-        }
-      },
-      errorMessage: "Valid recipe ID is required"
-    },
+    // recipeId: {
+    //   notEmpty: true,
+    //   isString: true,
+    //   custom: {
+    //     options: (value) => {
+    //       if (!ObjectId.isValid(value)) {
+    //         throw new Error('Invalid recipe ID format');
+    //       }
+    //       return true;
+    //     }
+    //   },
+    //   errorMessage: "Valid recipe ID is required"
+    // },
     rating: {
       notEmpty: true,
       isInt: {
