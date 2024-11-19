@@ -57,7 +57,7 @@ const Navbar = ({ isAuthenticated, toggleAuth, user }) => {
                   </NavigationMenuItem>
 
                   <NavigationMenuItem>
-                    <NavigationMenuTrigger className="h-9 px-2">
+                    <NavigationMenuTrigger className="h-9 px-2" onClick={() => {navigate("/profile")}}>
                       <div className="flex items-center gap-2">
                         <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center">
                           <User className="h-4 w-4 text-orange-600" />
@@ -65,22 +65,6 @@ const Navbar = ({ isAuthenticated, toggleAuth, user }) => {
                         <span className="text-sm font-medium">{user.username}</span>
                       </div>
                     </NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                      <div className="w-48 p-2">
-                        <Button
-                          variant="ghost"
-                          size="lg"
-                          className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => {
-                            toggleAuth();
-                            navigate('/auth');
-                          }}
-                        >
-                          <LogOut className="h-4 w-4 mr-2" />
-                          Sign Out
-                        </Button>
-                      </div>
-                    </NavigationMenuContent>
                   </NavigationMenuItem>
                 </>
               ) : (

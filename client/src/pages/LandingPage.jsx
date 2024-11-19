@@ -37,14 +37,6 @@ const LandingPage = () => {
             <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto lg:max-w-[85%]">
               Join our community of food lovers and explore thousands of delicious recipes from around the world.
             </p>
-            <Button 
-              size="lg" 
-              className="gap-2" 
-              onClick={() => navigate('/recipes')} // Dynamic navigation
-            >
-              Browse Recipes
-              <ArrowRight className="h-5 w-5" aria-hidden="true" />
-            </Button>
           </div>
         </div>
 

@@ -3,6 +3,7 @@ import { Search, SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import RecipeCard from '@/components/RecipeCard';
 import axios from 'axios';
+import Navbar from '@/components/Navbar';
 
 const categories = ['All', 'Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snacks'];
 const difficulties = ['All', 'Easy', 'Medium', 'Hard'];
@@ -16,7 +17,8 @@ export default function BrowsePage() {
   const [selectedDietary, setSelectedDietary] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const TOKEN = JSON.parse(localStorage.getItem("userInfo")).jwt; // Replace with actual token
+  const user = JSON.parse(localStorage.getItem("userInfo")); // Replace with actual token
+  const isAuthenticated = user ? true : false;
 
   useEffect(() => {
     fetchRecipes();
@@ -31,7 +33,7 @@ export default function BrowsePage() {
     if (searchTerm) url += `search=${searchTerm}`;
 
     axios
-      .get(url, { headers: { Authorization: `Bearer ${TOKEN}` } })
+      .get(url, { headers: { Authorization: `Bearer ${user.jwt}` } })
       .then((response) => setRecipes(response.data))
       .catch((error) => console.error('Error fetching recipes:', error));
   };
@@ -45,7 +47,9 @@ export default function BrowsePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div>
+    <Navbar isAuthenticated={isAuthenticated} user={user} />
+    <div className="min-h-screen bg-gray-50 mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Search and Filter Header */}
         <div className="flex flex-col md:flex-row gap-4 mb-8">
@@ -70,6 +74,7 @@ export default function BrowsePage() {
           ))}
         </div>
       </div>
+    </div>
     </div>
   );
 }
