@@ -250,4 +250,15 @@ const newRecipeSchemaRequest = {
     }
   };
 
-  export default {newUserSchemaRequest, userLoginSchema, newRecipeSchemaRequest, updateRecipeRequest, deleteRecipeRequest, addRatingSchema};
+const toggleFavoriteSchema = {
+  recipeId: {
+    notEmpty: true,
+    isString: true,
+    isLength: {
+      options: { min: 24, max: 24 }
+    },
+    errorMessage: "Invalid recipe ID format"
+  }
+};
+
+export default {newUserSchemaRequest, userLoginSchema, newRecipeSchemaRequest, updateRecipeRequest, deleteRecipeRequest, addRatingSchema, toggleFavoriteSchema};

@@ -104,9 +104,8 @@ router.post(
         email: user.email,
         password: user.password,
         account_info: {
-          followers: [],
-          following: [],
-          stories: []
+          recipes: [],
+          favorites: [] 
         }
       });
 
@@ -648,6 +647,130 @@ router.get("/recipe/:id/myrating", async (req, resp) => {
       message: "Internal server error",
       error: error.message
     });
+  }
+});
+
+router.post(
+  "/recipe/:id/favorite",
+  checkSchema(schema.toggleFavoriteSchema),
+  async (req, resp) => {
+      try {
+          const recipeId = req.params.id;
+          if (!ObjectId.isValid(recipeId)) {
+              resp.status(400).send({ error: "Invalid recipe ID format" });
+              return;
+          }
+
+          const authHeader = req.header("Authorization");
+          const token = authHeader.split(" ")[1];
+          const decoded = await auth.verifyToken(token);
+          const username = decoded.username;
+
+          let usersCollection = connect.db.collection("users");
+          let recipesCollection = connect.db.collection("recipes");
+
+          const query = {
+            _id: ObjectId.createFromHexString(recipeId)
+          };
+
+          const recipe = await recipesCollection.findOne(query);
+
+          if (!recipe) {
+              resp.status(404).send({ error: "Recipe not found" });
+              return;
+          }
+
+          const user = await usersCollection.findOne({
+              username: username,
+              "account_info.favorites": ObjectId.createFromHexString(recipeId)
+          });
+
+          if (user) {
+              await usersCollection.updateOne(
+                  { username: username },
+                  { $pull: { "account_info.favorites": ObjectId.createFromHexString(recipeId) } }
+              );
+              resp.status(200).send({
+                  message: "Recipe removed from favorites",
+                  isFavorited: false
+              });
+          } else {
+              await usersCollection.updateOne(
+                  { username: username },
+                  { $push: { "account_info.favorites": ObjectId.createFromHexString(recipeId) } }
+              );
+              resp.status(200).send({
+                  message: "Recipe added to favorites",
+                  isFavorited: true
+              });
+          }
+      } catch (error) {
+          resp.status(500).send({
+              message: "Internal server error",
+              error: error.message
+          });
+      }
+  }
+);
+
+router.get("/favorites", async (req, resp) => {
+  try {
+      const authHeader = req.header("Authorization");
+      const token = authHeader.split(" ")[1];
+      const decoded = await auth.verifyToken(token);
+      const username = decoded.username;
+
+      let usersCollection = connect.db.collection("users");
+      let recipesCollection = connect.db.collection("recipes");
+
+      const user = await usersCollection.findOne({ username: username });
+      
+      if (!user || !user.account_info.favorites) {
+          resp.status(200).send([]);
+          return;
+      }
+
+      const favorites = await recipesCollection.find({
+          _id: { $in: user.account_info.favorites }
+      }).toArray();
+
+      resp.status(200).send(favorites);
+  } catch (error) {
+      resp.status(500).send({
+          message: "Internal server error",
+          error: error.message
+      });
+  }
+});
+
+router.get("/recipe/:id/favorite", async (req, resp) => {
+  try {
+      const recipeId = req.params.id;
+      if (!ObjectId.isValid(recipeId)) {
+          resp.status(400).send({ error: "Invalid recipe ID format" });
+          return;
+      }
+
+      const authHeader = req.header("Authorization");
+      const token = authHeader.split(" ")[1];
+      const decoded = await auth.verifyToken(token);
+      const username = decoded.username;
+
+      let usersCollection = connect.db.collection("users");
+
+      const user = await usersCollection.findOne({
+          username: username,
+          "account_info.favorites": ObjectId.createFromHexString(recipeId)
+      });
+
+      resp.status(200).send({
+          isFavorited: !!user
+      });
+  } catch (error) {
+      resp.status(500).send({
+          message: "Internal server error",
+          error: error.message
+      });
   }
 });
 
