@@ -1,0 +1,272 @@
+// 1. User Authentication Flow
+// --------------------------
+
+// 1.1 Register New User
+POST http://localhost:3000/register/user
+Headers:
+{
+  "Content-Type": "application/json"
+}
+Body:
+{
+  "username": "chef_john",
+  "email": "john@example.com",
+  "password": "securepass123"
+}
+
+// Expected Success Response (200 OK):
+{
+  "message": "User created",
+  "user": {
+    "jwt": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "username": "chef_john",
+    "email": "john@example.com"
+  }
+}
+
+// 1.2 Login User
+POST http://localhost:3000/login
+Headers:
+{
+  "Content-Type": "application/json"
+}
+Body:
+{
+  "username": "chef_john",
+  "password": "securepass123"
+}
+
+// Expected Success Response (200 OK):
+{
+  "message": "User exists and logging in is allowed",
+  "user": {
+    "jwt": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "username": "chef_john",
+    "email": "john@example.com"
+  }
+}
+
+// Store the JWT token for subsequent requests
+const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+// 2. Recipe Management Flow
+// ------------------------
+
+// 2.1 Create New Recipe
+POST http://localhost:3000/recipe
+Headers:
+{
+  "Authorization": "Bearer ${TOKEN}",
+  "Content-Type": "application/json"
+}
+Body:
+{
+  "username": "chef_john",
+  "email": "john@example.com",
+  "title": "Classic Chocolate Cake",
+  "category": "dessert",
+  "ingredients": [
+    "2 cups all-purpose flour",
+    "2 cups sugar",
+    "3/4 cup unsweetened cocoa powder",
+    "2 teaspoons baking soda",
+    "1 teaspoon salt",
+    "2 eggs",
+    "1 cup milk",
+    "1/2 cup vegetable oil",
+    "2 teaspoons vanilla extract",
+    "1 cup boiling water"
+  ],
+  "steps": [
+    "Preheat oven to 350°F (175°C)",
+    "Mix dry ingredients in a large bowl",
+    "Add wet ingredients except boiling water",
+    "Stir in boiling water last",
+    "Bake for 30-35 minutes"
+  ],
+  "imageUrl": "https://example.com/chocolate-cake.jpg",
+  "prepTime": 45,
+  "servings": 8
+}
+
+// Expected Success Response (201 Created):
+{
+  "message": "Recipe created successfully",
+  "recipe": {
+    "id": "65f1a2b3c4d5e6f7g8h9i0j1",
+    "title": "Classic Chocolate Cake",
+    "category": "dessert",
+    "username": "chef_john"
+  }
+}
+
+// Store the recipe ID for subsequent requests
+const RECIPE_ID = "65f1a2b3c4d5e6f7g8h9i0j1"
+
+// 2.2 Get All Recipes
+GET http://localhost:3000/recipes
+Headers:
+{
+  "Authorization": "Bearer ${TOKEN}"
+}
+
+// Expected Success Response (200 OK):
+[
+  {
+    "_id": "65f1a2b3c4d5e6f7g8h9i0j1",
+    "title": "Classic Chocolate Cake",
+    "category": "dessert",
+    "username": "chef_john",
+    // ... other recipe fields ...
+  }
+  // ... more recipes ...
+]
+
+// 2.3 Get Recipe by ID
+GET http://localhost:3000/recipes/byid/${RECIPE_ID}
+Headers:
+{
+  "Authorization": "Bearer ${TOKEN}"
+}
+
+// Expected Success Response (200 OK):
+{
+  "_id": "65f1a2b3c4d5e6f7g8h9i0j1",
+  "title": "Classic Chocolate Cake",
+  "category": "dessert",
+  "username": "chef_john",
+  "ingredients": [...],
+  "steps": [...],
+  // ... other recipe fields ...
+}
+
+// 2.4 Update Recipe
+PUT http://localhost:3000/recipe/${RECIPE_ID}
+Headers:
+{
+  "Authorization": "Bearer ${TOKEN}",
+  "Content-Type": "application/json"
+}
+Body:
+{
+  "prepTime": 50,
+  "servings": 10
+}
+
+// Expected Success Response (200 OK):
+{
+  "message": "Recipe updated successfully",
+  "recipeId": "65f1a2b3c4d5e6f7g8h9i0j1"
+}
+
+// 3. Rating System Flow
+// --------------------
+
+// 3.1 Rate a Recipe (First Time)
+POST http://localhost:3000/recipe/${RECIPE_ID}/rate
+Headers:
+{
+  "Authorization": "Bearer ${TOKEN}",
+  "Content-Type": "application/json"
+}
+Body:
+{
+  "rating": 4
+}
+
+// Expected Success Response (201 Created):
+{
+  "message": "Rating added successfully",
+  "rating": 4
+}
+
+// 3.2 Update Previous Rating
+POST http://localhost:3000/recipe/${RECIPE_ID}/rate
+Headers:
+{
+  "Authorization": "Bearer ${TOKEN}",
+  "Content-Type": "application/json"
+}
+Body:
+{
+  "rating": 5
+}
+
+// Expected Success Response (200 OK):
+{
+  "message": "Rating updated successfully",
+  "rating": 5
+}
+
+// 3.3 Get Recipe Ratings
+GET http://localhost:3000/recipe/${RECIPE_ID}/ratings
+Headers:
+{
+  "Authorization": "Bearer ${TOKEN}"
+}
+
+// Expected Success Response (200 OK):
+{
+  "averageRating": 4.5,
+  "totalRatings": 2,
+  "ratingDistribution": {
+    "1": 0,
+    "2": 0,
+    "3": 0,
+    "4": 1,
+    "5": 1
+  }
+}
+
+// 3.4 Get User's Rating for Recipe
+GET http://localhost:3000/recipe/${RECIPE_ID}/myrating
+Headers:
+{
+  "Authorization": "Bearer ${TOKEN}"
+}
+
+// Expected Success Response (200 OK):
+{
+  "rating": 5,
+  "createdAt": "2024-03-15T10:30:00.000Z",
+  "updatedAt": "2024-03-15T11:15:00.000Z"
+}
+
+// 4. User Management Flow
+// ----------------------
+
+// 4.1 Get User Profile
+GET http://localhost:3000/user/chef_john
+Headers:
+{
+  "Authorization": "Bearer ${TOKEN}"
+}
+
+// Expected Success Response (200 OK):
+{
+  "username": "chef_john",
+  "email": "john@example.com",
+  "account_info": {
+    "followers": [],
+    "following": [],
+    "recipes": ["65f1a2b3c4d5e6f7g8h9i0j1"]
+  }
+}
+
+// 4.2 Get User's Recipes
+GET http://localhost:3000/recipes/byuser/chef_john
+Headers:
+{
+  "Authorization": "Bearer ${TOKEN}"
+}
+
+// Expected Success Response (200 OK):
+[
+  {
+    "_id": "65f1a2b3c4d5e6f7g8h9i0j1",
+    "title": "Classic Chocolate Cake",
+    "category": "dessert",
+    // ... other recipe fields ...
+  }
+  // ... more recipes ...
+]

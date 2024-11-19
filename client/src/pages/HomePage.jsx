@@ -10,16 +10,24 @@ export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
-  const TOKEN = 'YOUR_JWT_TOKEN'; // Replace with actual token from context/store
+  const TOKEN = localStorage.getItem("userInfo").jwt;
 
-  useEffect(() => {
+  console.log(TOKEN)
+
+  useEffect(async () => {
     // Fetch featured recipes on load
-    axios
-      .get('http://localhost:3000/recipes', {
-        headers: { Authorization: `Bearer ${TOKEN}` },
-      })
-      .then((response) => setRecipes(response.data))
-      .catch((error) => console.error('Error fetching recipes:', error));
+    const response = await fetch("http://localhost:3000/recipes", 
+      {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${TOKEN}`,
+        }
+      }
+    )
+    const result = await response.json()
+
+    console.log(result)
+
   }, [TOKEN]);
 
   const handleSearch = () => {
@@ -42,9 +50,6 @@ export default function HomePage() {
             </h1>
 
             <div className="max-w-2xl mx-auto relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-gray-400" />
-              </div>
               <input
                 type="text"
                 className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"

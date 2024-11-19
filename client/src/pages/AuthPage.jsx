@@ -2,34 +2,14 @@ import React, { useState } from 'react';
 import { Mail, Lock, User, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import axios from 'axios';
-
-const validationSchemas = {
-  login: {
-    email: {
-      validate: (value) => value.includes('@') || 'Invalid email address',
-    },
-    password: {
-      validate: (value) => value.length >= 6 || 'Password must be at least 6 characters',
-    },
-  },
-  signup: {
-    username: {
-      validate: (value) => value.length >= 3 || 'Username must be at least 3 characters',
-    },
-    email: {
-      validate: (value) => value.includes('@') || 'Invalid email address',
-    },
-    password: {
-      validate: (value) => value.length >= 6 || 'Password must be at least 6 characters',
-    },
-  },
-};
+import { useNavigate } from 'react-router-dom';
 
 export default function AuthPage() {
   const [formType, setFormType] = useState('login');
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate()
 
   const validateForm = (data) => {
     const schema = validationSchemas[formType];
@@ -47,28 +27,55 @@ export default function AuthPage() {
   };
 
   const handleSubmit = async (e) => {
+    // form is being submitted
     e.preventDefault();
     setServerError('');
     setIsSubmitting(true);
 
-    const formData = new FormData(e.target);
-    const data = Object.fromEntries(formData.entries());
+    // change the form data to have
+    // {
+    //   "username": "chef_john",
+    //   "email": "john@example.com",
+    //   "password": "securepass123"
+    // }
 
-    if (!validateForm(data)) {
-      setIsSubmitting(false);
-      return;
+    // change form data entries
+    
+    const formData = new FormData(e.target);
+    const data = {
+      username: formData.get('username'),
+      email: formData.get('email'),
+      password: formData.get('password'),
     }
+
+    // Debugging logs
+    console.log('Form Data:', data);
 
     try {
       const endpoint = formType === 'login' ? 'http://localhost:3000/login' : 'http://localhost:3000/register/user';
-      const response = await axios.post(endpoint, data);
+      const response = await fetch (endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
 
-      console.log('Form submitted:', response.data);
-      // Handle successful response (e.g., redirect or save token)
+      const result = await response.json();
+
+      console.log("Response:", result);
+
+      // Save the JWT token to localStorage
+
+      const { jwt, username, email } = result.user;
+      localStorage.setItem('userInfo', JSON.stringify({jwt, username, email}));
+
+      if (response.status == 200) {
+        navigate("/home")
+      }
     } catch (error) {
-      setServerError(
-        error.response?.data?.error || 'Something went wrong. Please try again.'
-      );
+      console.log("Error");
+      throw error;
     } finally {
       setIsSubmitting(false);
     }
@@ -129,15 +136,15 @@ export default function AuthPage() {
                 <Mail className="h-5 w-5 text-gray-400" />
               </div>
               <input
-                type="email"
+                type="text"
                 name="email"
                 className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
-                placeholder="you@example.com"
+                placeholder="johndoe"
               />
-              {errors.email && (
+              {errors.username && (
                 <div className="mt-1 flex items-center text-sm text-red-600">
                   <AlertCircle className="h-4 w-4 mr-1" />
-                  {errors.email}
+                  {errors.username}
                 </div>
               )}
             </div>

@@ -1,8 +1,10 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 
-const ProtectedRoute = ({ isAuthenticated, children }) => {
-  return isAuthenticated ? children : <Navigate to="/auth" />;
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem('jwtToken');
+
+  return token ? children : <Navigate to="/auth" />;
 };
 
 export default ProtectedRoute;
