@@ -1,41 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, SlidersHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import RecipeCard from '@/components/RecipeCard';
+import axios from 'axios';
 
 const categories = ['All', 'Breakfast', 'Lunch', 'Dinner', 'Dessert', 'Snacks'];
 const difficulties = ['All', 'Easy', 'Medium', 'Hard'];
 const dietaryOptions = ['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free'];
 
-const recipes = [
-  {
-    id: 1,
-    title: 'Classic Margherita Pizza',
-    description: 'Traditional Italian pizza with fresh basil and mozzarella',
-    image: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&q=80',
-    cookTime: '30 mins',
-    difficulty: 'Medium',
-  },
-  {
-    id: 2,
-    title: 'Chocolate Lava Cake',
-    description: 'Decadent dessert with a molten chocolate center',
-    image: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&q=80',
-    cookTime: '25 mins',
-    difficulty: 'Easy',
-  },
-  {
-    id: 3,
-    title: 'Fresh Spring Rolls',
-    description: 'Vietnamese-style rolls with vegetables and herbs',
-    image: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&q=80',
-    cookTime: '45 mins',
-    difficulty: 'Medium',
-  },
-];
-
 export default function BrowsePage() {
+  const [recipes, setRecipes] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedDifficulty, setSelectedDifficulty] = useState('All');
+  const [selectedDietary, setSelectedDietary] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const TOKEN = 'YOUR_JWT_TOKEN'; // Replace with actual token
+
+  useEffect(() => {
+    fetchRecipes();
+  }, [selectedCategory, selectedDifficulty, selectedDietary, searchTerm]);
+
+  const fetchRecipes = () => {
+    let url = `http://localhost:3000/recipes?`;
+
+    if (selectedCategory !== 'All') url += `category=${selectedCategory}&`;
+    if (selectedDifficulty !== 'All') url += `difficulty=${selectedDifficulty}&`;
+    if (selectedDietary.length) url += `dietary=${selectedDietary.join(',')}&`;
+    if (searchTerm) url += `search=${searchTerm}`;
+
+    axios
+      .get(url, { headers: { Authorization: `Bearer ${TOKEN}` } })
+      .then((response) => setRecipes(response.data))
+      .catch((error) => console.error('Error fetching recipes:', error));
+  };
+
+  const toggleDietaryOption = (option) => {
+    setSelectedDietary((prev) =>
+      prev.includes(option)
+        ? prev.filter((item) => item !== option)
+        : [...prev, option]
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -50,6 +57,8 @@ export default function BrowsePage() {
               type="text"
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
               placeholder="Search recipes..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <Button
@@ -73,9 +82,10 @@ export default function BrowsePage() {
                   {categories.map((category) => (
                     <Button
                       key={category}
-                      variant="outline"
+                      variant={selectedCategory === category ? 'solid' : 'outline'}
                       size="sm"
                       className="rounded-full"
+                      onClick={() => setSelectedCategory(category)}
                     >
                       {category}
                     </Button>
@@ -90,9 +100,10 @@ export default function BrowsePage() {
                   {difficulties.map((difficulty) => (
                     <Button
                       key={difficulty}
-                      variant="outline"
+                      variant={selectedDifficulty === difficulty ? 'solid' : 'outline'}
                       size="sm"
                       className="rounded-full"
+                      onClick={() => setSelectedDifficulty(difficulty)}
                     >
                       {difficulty}
                     </Button>
@@ -107,9 +118,10 @@ export default function BrowsePage() {
                   {dietaryOptions.map((option) => (
                     <Button
                       key={option}
-                      variant="outline"
+                      variant={selectedDietary.includes(option) ? 'solid' : 'outline'}
                       size="sm"
                       className="rounded-full"
+                      onClick={() => toggleDietaryOption(option)}
                     >
                       {option}
                     </Button>

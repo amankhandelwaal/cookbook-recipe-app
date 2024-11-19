@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Lock, User, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import axios from 'axios';
 
 const validationSchemas = {
   login: {
@@ -27,6 +28,8 @@ const validationSchemas = {
 export default function AuthPage() {
   const [formType, setFormType] = useState('login');
   const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateForm = (data) => {
     const schema = validationSchemas[formType];
@@ -43,13 +46,31 @@ export default function AuthPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setServerError('');
+    setIsSubmitting(true);
+
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
 
-    if (validateForm(data)) {
-      console.log('Form submitted:', data);
+    if (!validateForm(data)) {
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const endpoint = formType === 'login' ? 'http://localhost:3000/login' : 'http://localhost:3000/register/user';
+      const response = await axios.post(endpoint, data);
+
+      console.log('Form submitted:', response.data);
+      // Handle successful response (e.g., redirect or save token)
+    } catch (error) {
+      setServerError(
+        error.response?.data?.error || 'Something went wrong. Please try again.'
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -143,9 +164,16 @@ export default function AuthPage() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full">
-            {formType === 'login' ? 'Sign In' : 'Create Account'}
+          <Button type="submit" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? 'Submitting...' : formType === 'login' ? 'Sign In' : 'Create Account'}
           </Button>
+
+          {serverError && (
+            <div className="mt-4 text-center text-sm text-red-600">
+              <AlertCircle className="h-5 w-5 inline-block mr-1" />
+              {serverError}
+            </div>
+          )}
         </form>
 
         <div className="mt-6 text-center">
