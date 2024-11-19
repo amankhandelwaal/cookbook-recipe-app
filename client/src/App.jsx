@@ -9,6 +9,7 @@ import ProfilePage from './pages/ProfilePage';
 import AboutPage from './pages/AboutUsPage';
 import CreateRecipe from './pages/CreateRecipePage';
 import ProtectedRoute from './components/ProtectedRoute'; // Import ProtectedRoute
+import RecipeDetailsPage from './pages/RecipeDetailsPage';
 
 function App() {
   const isAuthenticated = false; // Replace with real auth logic
@@ -48,11 +49,21 @@ function App() {
             </ProtectedRoute>
           } 
         />
+
+        <Route path="/profile" element={<ProfilePage />} />
+        
         <Route 
           path="/create" 
           element={
+            <ProtectedRoute isAuthenticated={isAuthenticated}>
               <CreateRecipe />
+            </ProtectedRoute>
           } 
+        />
+
+        <Route 
+          path="/recipes/:id"
+          element={ <RecipeDetailsPage /> }
         />
       </Routes>
     </Router>

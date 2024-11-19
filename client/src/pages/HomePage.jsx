@@ -1,46 +1,40 @@
-import React, { useEffect, useState } from 'react';
-import { Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import RecipeCard from '@/components/RecipeCard';
-import axios from 'axios'; // For API calls
-import { useNavigate } from 'react-router-dom'; // For navigation
+import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import RecipeCard from "@/components/RecipeCard";
+import { useNavigate } from "react-router-dom"; // For navigation
+import Navbar from "@/components/Navbar";
 
 export default function HomePage() {
   const [recipes, setRecipes] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
-  const TOKEN = localStorage.getItem("userInfo").jwt;
+  const user = JSON.parse(localStorage.getItem("userInfo"));
+  const isAuthenticated = user.jwt ? true : false;
 
-  console.log(TOKEN)
+  useEffect(() => {
+    async function fetchRecipes() {
+      try {
+        const response = await fetch("http://localhost:3000/recipes", {
+          headers: {
+            Authorization: `Bearer ${user.jwt}`,
+          },
+        });
 
-  useEffect(async () => {
-    // Fetch featured recipes on load
-    const response = await fetch("http://localhost:3000/recipes", 
-      {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${TOKEN}`,
-        }
+        const result = await response.json();
+
+        setRecipes(result);
+      } catch (e) {
+        console.log("Error in fetching Recipes");
+        throw e;
       }
-    )
-    const result = await response.json()
+    }
 
-    console.log(result)
-
-  }, [TOKEN]);
-
-  const handleSearch = () => {
-    axios
-      .get(`http://localhost:3000/recipes?search=${searchTerm}`, {
-        headers: { Authorization: `Bearer ${TOKEN}` },
-      })
-      .then((response) => setRecipes(response.data))
-      .catch((error) => console.error('Error fetching search results:', error));
-  };
+    fetchRecipes();
+  }, [user.jwt]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-16">
+      <Navbar isAuthenticated={isAuthenticated} user={user} />
       {/* Hero Search Section */}
       <div className="bg-gradient-to-b from-orange-50 to-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -48,19 +42,6 @@ export default function HomePage() {
             <h1 className="text-4xl font-bold text-gray-900 mb-8">
               What would you like to cook today?
             </h1>
-
-            <div className="max-w-2xl mx-auto relative">
-              <input
-                type="text"
-                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                placeholder="Search recipes..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <Button onClick={handleSearch} className="mt-4 w-full">
-                Search
-              </Button>
-            </div>
           </div>
         </div>
       </div>
@@ -69,7 +50,7 @@ export default function HomePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl font-bold text-gray-900">Featured Recipes</h2>
-          <Button variant="outline" onClick={() => navigate('/recipes')}>
+          <Button variant="outline" onClick={() => navigate("/browse")}>
             View All
           </Button>
         </div>

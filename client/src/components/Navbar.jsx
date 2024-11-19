@@ -62,7 +62,7 @@ const Navbar = ({ isAuthenticated, toggleAuth, user }) => {
                         <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center">
                           <User className="h-4 w-4 text-orange-600" />
                         </div>
-                        <span className="text-sm font-medium">{user.name}</span>
+                        <span className="text-sm font-medium">{user.username}</span>
                       </div>
                     </NavigationMenuTrigger>
                     <NavigationMenuContent>

@@ -16,7 +16,7 @@ export default function BrowsePage() {
   const [selectedDietary, setSelectedDietary] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const TOKEN = 'YOUR_JWT_TOKEN'; // Replace with actual token
+  const TOKEN = JSON.parse(localStorage.getItem("userInfo")).jwt; // Replace with actual token
 
   useEffect(() => {
     fetchRecipes();
@@ -61,81 +61,12 @@ export default function BrowsePage() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button
-            variant="outline"
-            className="flex items-center gap-2"
-            onClick={() => setShowFilters(!showFilters)}
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-            Filters
-          </Button>
         </div>
-
-        {/* Filters */}
-        {showFilters && (
-          <div className="mb-8 p-4 bg-white rounded-lg shadow-sm">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Categories */}
-              <div>
-                <h3 className="font-medium mb-2">Category</h3>
-                <div className="flex flex-wrap gap-2">
-                  {categories.map((category) => (
-                    <Button
-                      key={category}
-                      variant={selectedCategory === category ? 'solid' : 'outline'}
-                      size="sm"
-                      className="rounded-full"
-                      onClick={() => setSelectedCategory(category)}
-                    >
-                      {category}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Difficulty */}
-              <div>
-                <h3 className="font-medium mb-2">Difficulty</h3>
-                <div className="flex flex-wrap gap-2">
-                  {difficulties.map((difficulty) => (
-                    <Button
-                      key={difficulty}
-                      variant={selectedDifficulty === difficulty ? 'solid' : 'outline'}
-                      size="sm"
-                      className="rounded-full"
-                      onClick={() => setSelectedDifficulty(difficulty)}
-                    >
-                      {difficulty}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Dietary Preferences */}
-              <div>
-                <h3 className="font-medium mb-2">Dietary Preferences</h3>
-                <div className="flex flex-wrap gap-2">
-                  {dietaryOptions.map((option) => (
-                    <Button
-                      key={option}
-                      variant={selectedDietary.includes(option) ? 'solid' : 'outline'}
-                      size="sm"
-                      className="rounded-full"
-                      onClick={() => toggleDietaryOption(option)}
-                    >
-                      {option}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Recipe Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {recipes.map((recipe) => (
-            <RecipeCard key={recipe.id} recipe={recipe} />
+            <RecipeCard key={recipe._id} recipe={recipe} />
           ))}
         </div>
       </div>
