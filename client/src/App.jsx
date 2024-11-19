@@ -10,6 +10,7 @@ import AboutPage from './pages/AboutUsPage';
 import CreateRecipe from './pages/CreateRecipePage';
 import ProtectedRoute from './components/ProtectedRoute'; // Import ProtectedRoute
 import RecipeDetailsPage from './pages/RecipeDetailsPage';
+import FavoritesPage from './pages/FavouritesPage';
 
 function App() {
   const isAuthenticated = false; // Replace with real auth logic
@@ -65,6 +66,8 @@ function App() {
           path="/recipes/:id"
           element={ <RecipeDetailsPage /> }
         />
+
+        <Route path="/favorites" element={<FavoritesPage />} />
       </Routes>
     </Router>
   );

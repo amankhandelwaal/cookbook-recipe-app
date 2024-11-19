@@ -1,5 +1,5 @@
 import React from 'react';
-import { CookingPot, PlusCircle, User, LogOut } from 'lucide-react';
+import { CookingPot, PlusCircle, User, LogOut, Heart } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
 import {
@@ -49,6 +49,14 @@ const Navbar = ({ isAuthenticated, toggleAuth, user }) => {
                     </Link>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
+                    <Link to="/favorites">
+                      <Button variant="ghost" size="lg" className="text-sm flex items-center gap-1">
+                        <Heart className="h-4 w-4 text-red-500" />
+                        Favorites
+                      </Button>
+                    </Link>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
                     <Link to="/about">
                       <Button variant="ghost" size="lg" className="text-sm">
                         About Us
@@ -57,7 +65,7 @@ const Navbar = ({ isAuthenticated, toggleAuth, user }) => {
                   </NavigationMenuItem>
 
                   <NavigationMenuItem>
-                    <NavigationMenuTrigger className="h-9 px-2" onClick={() => {navigate("/profile")}}>
+                    <NavigationMenuTrigger className="h-9 px-2" onClick={() => navigate("/profile")}>
                       <div className="flex items-center gap-2">
                         <div className="h-8 w-8 rounded-full bg-orange-100 flex items-center justify-center">
                           <User className="h-4 w-4 text-orange-600" />

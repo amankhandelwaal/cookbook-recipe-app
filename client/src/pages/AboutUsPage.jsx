@@ -4,10 +4,10 @@ import { Button } from '@/components/ui/button';
 
 const team = [
   {
-    name: 'Sarah Johnson',
-    role: 'Founder & Head Chef',
-    image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80',
-    bio: 'With over 15 years of culinary experience, Sarah founded RecipeBook to share her passion for cooking with the world.',
+    name: 'Aman Khandelwal',
+    srn: 'PES2UG23CS051',
+    image: '',
+    bio: '',
     social: {
       twitter: '#',
       linkedin: '#',
@@ -15,10 +15,10 @@ const team = [
     },
   },
   {
-    name: 'Michael Chen',
-    role: 'Lead Developer',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80',
-    bio: 'A full-stack developer with a love for both coding and cooking, Michael ensures RecipeBook runs smoothly.',
+    name: 'Alayna Monteiro',
+    srn: 'PES2UG23CS050',
+    image: '',
+    bio: '',
     social: {
       twitter: '#',
       linkedin: '#',
@@ -26,10 +26,10 @@ const team = [
     },
   },
   {
-    name: 'Emily Rodriguez',
-    role: 'Community Manager',
-    image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80',
-    bio: 'Emily builds and nurtures our amazing community of food lovers, ensuring everyone feels welcome.',
+    name: 'Amogh Acharya',
+    srn: 'PES2UG23CS055',
+    image: '',
+    bio: '',
     social: {
       twitter: '#',
       linkedin: '#',
@@ -58,14 +58,15 @@ export default function AboutPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Mission</h2>
-            <p className="text-gray-600 mb-4">
-              At RecipeBook, we believe that cooking is more than just preparing meals—it's
-              about creativity, sharing, and bringing people together.
-            </p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Inspiration</h2>
             <p className="text-gray-600">
-              We're building a community where food enthusiasts can connect, share their
-              culinary adventures, and inspire others to create memorable dining experiences.
+              It all started during a group project meeting that was supposed to be about “serious coding.” 
+              Instead, we spent half the time arguing over which food delivery app had the best discounts and the other half Googling “easy recipes with 3 ingredients.” 
+              That's when someone said, "What if there was a recipe site made for people like us—who love food but have no time, skills, or patience?"
+
+              And just like that, the idea was born. A website where food meets simplicity, sprinkled with a bit of humor, 
+              and served fresh for everyone who's ever burned toast. 
+              Enjoy the chaos—we mean, the recipes!
             </p>
           </div>
           <div className="relative h-96 rounded-lg overflow-hidden">
@@ -102,7 +103,7 @@ export default function AboutPage() {
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
                   {member.name}
                 </h3>
-                <p className="text-orange-600 font-medium mb-4">{member.role}</p>
+                <p className="text-orange-600 font-medium mb-4">{member.srn}</p>
                 <p className="text-gray-600 mb-6">{member.bio}</p>
                 <div className="flex justify-center space-x-4">
                   <Button variant="ghost" size="icon" onClick={() => window.open(member.social.twitter)}>
@@ -118,39 +119,6 @@ export default function AboutPage() {
               </div>
             ))}
           </div>
-        </div>
-      </div>
-
-      {/* Values Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">
-          Our Values
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            {
-              title: 'Community First',
-              description: 'Building a supportive and inclusive space for food lovers.',
-            },
-            {
-              title: 'Quality Content',
-              description: 'Ensuring every recipe is tested and meets our high standards.',
-            },
-            {
-              title: 'Continuous Innovation',
-              description: 'Always improving to provide the best cooking experience.',
-            },
-          ].map((value) => (
-            <div
-              key={value.title}
-              className="bg-orange-50 rounded-lg p-6 text-center"
-            >
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                {value.title}
-              </h3>
-              <p className="text-gray-600">{value.description}</p>
-            </div>
-          ))}
         </div>
       </div>
     </div>
