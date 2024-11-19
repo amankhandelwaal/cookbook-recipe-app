@@ -37,6 +37,7 @@ const LandingPage = () => {
             <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto lg:max-w-[85%]">
               Join our community of food lovers and explore thousands of delicious recipes from around the world.
             </p>
+        
           </div>
         </div>
 
@@ -80,8 +81,6 @@ const LandingPage = () => {
           </div>
         </section>
       </main>
-      
-      <Footer />
     </div>
   );
 };

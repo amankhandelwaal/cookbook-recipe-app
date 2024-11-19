@@ -68,6 +68,7 @@ function App() {
         />
 
         <Route path="/favorites" element={<FavoritesPage />} />
+
       </Routes>
     </Router>
   );
