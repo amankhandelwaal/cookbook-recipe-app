@@ -133,8 +133,11 @@ export default function CreateRecipePage() {
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="appetizer">Appetizer</SelectItem>
-                  <SelectItem value="main-course">Main Course</SelectItem>
+                  <SelectItem value="breakfast">Breakfast</SelectItem>
+                  <SelectItem value="lunch">Lunch</SelectItem>
+                  <SelectItem value="dinner">Dinner</SelectItem>
+                  <SelectItem value="snack">Snack</SelectItem>
+                  <SelectItem value="beverage">Beverage</SelectItem>
                   <SelectItem value="dessert">Dessert</SelectItem>
                 </SelectContent>
               </Select>
