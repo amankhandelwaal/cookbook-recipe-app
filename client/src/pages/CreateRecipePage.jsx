@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import Navbar from "@/components/Navbar";
 
-export default function Component() {
+export default function CreateRecipePage() {
   const [recipe, setRecipe] = useState({
     title: "",
     category: "",
@@ -23,6 +23,10 @@ export default function Component() {
     prepTime: "",
     servings: "",
   });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiError, setApiError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -34,14 +38,17 @@ export default function Component() {
   };
 
   const user = JSON.parse(localStorage.getItem("userInfo"));
-
   const isAuthenticated = user ? true : false;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setApiError(null);
+    setSuccessMessage(null);
 
     if (recipe.ingredients.trim() === "" || recipe.steps.trim() === "") {
       alert("At least one ingredient and one step are required.");
+      setIsSubmitting(false);
       return;
     }
 
@@ -68,15 +75,28 @@ export default function Component() {
         body: JSON.stringify(formattedRecipe),
       });
 
+      const result = await response.json();
+
       if (response.ok) {
-        alert("Recipe created successfully!");
-        // Reset form or redirect user
+        setSuccessMessage("Recipe created successfully!");
+        setRecipe({
+          title: "",
+          category: "",
+          ingredients: "",
+          steps: "",
+          imageUrl: "",
+          prepTime: "",
+          servings: "",
+        });
       } else {
-        alert("Failed to create recipe");
+        setApiError(result.message || "Failed to create recipe");
+        console.error("Error:", result);
       }
     } catch (error) {
+      setApiError("An error occurred while creating the recipe");
       console.error("Error:", error);
-      alert("An error occurred while creating the recipe");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -174,9 +194,11 @@ export default function Component() {
                 min={1}
               />
             </div>
-            <Button type="submit" className="w-full">
-              Create Recipe
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Submitting..." : "Create Recipe"}
             </Button>
+            {apiError && <div className="text-red-500 mt-2">{apiError}</div>}
+            {successMessage && <div className="text-green-500 mt-2">{successMessage}</div>}
           </form>
         </CardContent>
       </Card>
